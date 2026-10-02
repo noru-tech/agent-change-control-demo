@@ -112,3 +112,16 @@ api_or_empty() {
   local result
   if result="$(gh api "$1" --jq "$2" 2>/dev/null)"; then printf '%s' "$result"; fi
 }
+
+# set_pr ID NUMBER: write a pull request number into scenarios.yml without reformatting the file
+# (yq -i drops blank lines and comment alignment). Matches the `pr:` line right after `id: "ID"`.
+set_pr() {
+  local tmp
+  tmp="$(mktemp)"
+  awk -v id="$1" -v pr="$2" '
+    $0 ~ "^  - id: \"?" id "\"?$" { hit = 1; print; next }
+    hit && $1 == "pr:" { sub(/pr: .*/, "pr: " pr); hit = 0 }
+    { print }
+  ' "$CONFIG" > "$tmp"
+  mv "$tmp" "$CONFIG"
+}

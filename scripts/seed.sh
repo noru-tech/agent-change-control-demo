@@ -81,10 +81,7 @@ open() {
     pr="$(pr_of "$id")"
     [ -n "$pr" ] || die "$id: no pull request after opening it"
   fi
-  case "$id" in
-    h*) yq -i "(.history[] | select(.id == \"$id\") | .pr) = $pr" "$CONFIG" ;;
-    *) yq -i "(.scenarios[] | select(.id == \"$id\") | .pr) = $pr" "$CONFIG" ;;
-  esac
+  set_pr "$id" "$pr"
   echo "  $id -> #$pr"
 }
 
