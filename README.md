@@ -126,8 +126,9 @@ finding itself stays in the record.
 
 ## The ruleset
 
-After seeding, a ruleset on `main` requires the `change-control` check from GitHub Actions and
-allows no bypass ([`ruleset/main.json`](ruleset/main.json)). The failing scenarios cannot be
+After seeding, a ruleset on `main` requires the `change-control` check and the `ci` workflow's
+`test` and `preview` jobs from GitHub Actions, and allows no bypass
+([`ruleset/main.json`](ruleset/main.json)). The failing scenarios cannot be
 merged. That is part of the demo.
 
 The ruleset requires zero approving reviews. GitHub's own count would accept the reviewer app's
