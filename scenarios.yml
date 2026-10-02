@@ -17,7 +17,7 @@ acc:
 
 # GitHub identities. The two humans fill in their logins during setup (SETUP.md, step 1).
 identities:
-  operator: ""                      # human: directs the writing agent
+  operator: bipthelin               # human: directs the writing agent
   reviewer: ""                      # human: the independent reviewer
   writer_app: noru-demo-writer      # GitHub App: the writing agent's account
   reviewer_app: noru-demo-reviewer  # GitHub App: reviewing agent, another vendor
