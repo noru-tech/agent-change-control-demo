@@ -24,8 +24,9 @@ export class Customers {
   create(input: NewCustomer, actor: string): Customer {
     if (input.name.trim() === "") throw new TypeError("name is required");
     if (!input.email.includes("@")) throw new TypeError("email is invalid");
-    if (!/^[A-Z]{2}$/.test(input.country)) throw new TypeError("country must be ISO 3166-1 alpha-2");
-    const customer: Customer = { id: `cus_${this.#byId.size + 1}`, ...input };
+    const country = input.country.trim().toUpperCase();
+    if (!/^[A-Z]{2}$/.test(country)) throw new TypeError("country must be ISO 3166-1 alpha-2");
+    const customer: Customer = { id: `cus_${this.#byId.size + 1}`, ...input, country };
     this.#byId.set(customer.id, customer);
     this.#audit.record(actor, "customer.created", customer.id);
     return customer;
