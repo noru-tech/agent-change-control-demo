@@ -72,7 +72,7 @@ what it rests on.
    reason that names the policy, and ACC009 passes.
 
 The model's review is in [`scenarios/10/review-output.md`](scenarios/10/review-output.md).
-Model: `<filled in after the run>`. Run on `<date>`.
+Model: `gpt-5-2025-08-07` (OpenAI), run on 2026-10-02 in [this workflow run](https://github.com/noru-tech/agent-change-control-demo/actions/runs/37005982318).
 
 ### What this rests on
 
@@ -257,16 +257,16 @@ document to the change, and the sha256 of the predicate file, which is what
 MIT licence. Maintained by [Noru](https://noru.tech). You do not need a Noru account, or to have
 heard of Noru, to use anything here.
 
-[pr01]: https://github.com/noru-tech/agent-change-control-demo/pulls?q=is%3Apr+head%3Ademo%2F01-clean-agent-change
-[pr02]: https://github.com/noru-tech/agent-change-control-demo/pulls?q=is%3Apr+head%3Ademo%2F02-operator-self-approved
-[pr03]: https://github.com/noru-tech/agent-change-control-demo/pulls?q=is%3Apr+head%3Ademo%2F03-no-approval
-[pr04]: https://github.com/noru-tech/agent-change-control-demo/pulls?q=is%3Apr+head%3Ademo%2F04-operator-unknown
-[pr05]: https://github.com/noru-tech/agent-change-control-demo/pulls?q=is%3Apr+head%3Ademo%2F05-stale-approval
-[pr06]: https://github.com/noru-tech/agent-change-control-demo/pulls?q=is%3Apr+head%3Ademo%2F06-trailer-derived
-[pr07]: https://github.com/noru-tech/agent-change-control-demo/pulls?q=is%3Apr+head%3Ademo%2F07-agent-trace
-[pr08]: https://github.com/noru-tech/agent-change-control-demo/pulls?q=is%3Apr+head%3Ademo%2F08-same-vendor-review
-[pr09]: https://github.com/noru-tech/agent-change-control-demo/pulls?q=is%3Apr+head%3Ademo%2F09-agent-review-unsigned
-[pr10]: https://github.com/noru-tech/agent-change-control-demo/pulls?q=is%3Apr+head%3Ademo%2F10-zero-human-four-eyes
+[pr01]: https://github.com/noru-tech/agent-change-control-demo/pull/5
+[pr02]: https://github.com/noru-tech/agent-change-control-demo/pull/15
+[pr03]: https://github.com/noru-tech/agent-change-control-demo/pull/16
+[pr04]: https://github.com/noru-tech/agent-change-control-demo/pull/8
+[pr05]: https://github.com/noru-tech/agent-change-control-demo/pull/9
+[pr06]: https://github.com/noru-tech/agent-change-control-demo/pull/10
+[pr07]: https://github.com/noru-tech/agent-change-control-demo/pull/11
+[pr08]: https://github.com/noru-tech/agent-change-control-demo/pull/17
+[pr09]: https://github.com/noru-tech/agent-change-control-demo/pull/18
+[pr10]: https://github.com/noru-tech/agent-change-control-demo/pull/14
 [r1]: https://github.com/noru-tech/agent-change-control/blob/v0.6.0/docs/rules/ACC001.md
 [r2]: https://github.com/noru-tech/agent-change-control/blob/v0.6.0/docs/rules/ACC002.md
 [r6]: https://github.com/noru-tech/agent-change-control/blob/v0.6.0/docs/rules/ACC006.md

@@ -44,7 +44,7 @@ evidence:
 
 scenarios:
   - id: "01"
-    pr: null
+    pr: 5
     branch: demo/01-clean-agent-change
     title: "01: Clean agent change, independent approval"
     opened_by: writer_app
@@ -66,7 +66,7 @@ scenarios:
       ACC010: not_applicable
 
   - id: "02"
-    pr: null
+    pr: 15
     branch: demo/02-operator-self-approved
     title: "02: The agent's operator approves its change"
     opened_by: writer_app
@@ -88,7 +88,7 @@ scenarios:
       ACC010: not_applicable
 
   - id: "03"
-    pr: null
+    pr: 16
     branch: demo/03-no-approval
     title: "03: Agent change with no approval"
     opened_by: writer_app
@@ -110,7 +110,7 @@ scenarios:
       ACC010: not_applicable
 
   - id: "04"
-    pr: null
+    pr: 8
     branch: demo/04-operator-unknown
     title: "04: Agent account known, operator unknown"
     opened_by: writer_app
@@ -132,7 +132,7 @@ scenarios:
       ACC010: not_applicable
 
   - id: "05"
-    pr: null
+    pr: 9
     branch: demo/05-stale-approval
     title: "05: Approval goes stale after a new commit"
     opened_by: writer_app
@@ -155,7 +155,7 @@ scenarios:
       ACC010: not_applicable
 
   - id: "06"
-    pr: null
+    pr: 10
     branch: demo/06-trailer-derived
     title: "06: Authorship read from Co-Authored-By trailers"
     opened_by: operator
@@ -178,7 +178,7 @@ scenarios:
       ACC010: not_applicable
 
   - id: "07"
-    pr: null
+    pr: 11
     branch: demo/07-agent-trace
     title: "07: Authorship read from an Agent Trace record"
     opened_by: operator
@@ -201,7 +201,7 @@ scenarios:
       ACC010: not_applicable
 
   - id: "08"
-    pr: null
+    pr: 17
     branch: demo/08-same-vendor-review
     title: "08: An agent from the same vendor approves"
     opened_by: writer_app
@@ -223,7 +223,7 @@ scenarios:
       ACC010: not_applicable
 
   - id: "09"
-    pr: null
+    pr: 18
     branch: demo/09-agent-review-unsigned
     title: "09: Another vendor's agent approves, unsigned"
     opened_by: writer_app
@@ -246,7 +246,7 @@ scenarios:
       ACC010: fail
 
   - id: "10"
-    pr: null
+    pr: 14
     branch: demo/10-zero-human-four-eyes
     title: "10: Four eyes with no human approval"
     opened_by: writer_app
@@ -282,28 +282,28 @@ exception:
 # Merged history for `acc scan`. Seeded and merged before the ruleset is enabled.
 history:
   - id: h1
-    pr: null
+    pr: 1
     branch: history/h1-vat
     title: "Add standard VAT rates"
     opened_by: writer_app
     declaration: true
     review: reviewer
   - id: h2
-    pr: null
+    pr: 2
     branch: history/h2-pagination
     title: "Add offset pagination helper"
     opened_by: writer_app
     declaration: true
     review: reviewer
   - id: h3
-    pr: null
+    pr: 3
     branch: history/h3-credit-notes
     title: "Add credit notes for refunds"
     opened_by: writer_app
     declaration: true
     review: reviewer
   - id: h4
-    pr: null
+    pr: 4
     branch: history/h4-country-case
     title: "Accept lower-case country codes"
     opened_by: operator

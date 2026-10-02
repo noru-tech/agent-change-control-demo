@@ -1,1 +1,10 @@
-{}
+{
+  "acc-8dd1d5b487251c57": {
+    "status": "accepted",
+    "owner": "security@noru.tech",
+    "decided_at": "2026-10-02",
+    "expires_at": "2026-12-31",
+    "rationale": "Merged by the operator without review while seeding this demo, before the ruleset on main was enabled, so that the scan has a recorded exception to show. Synthetic change; no customer data or production system involved.",
+    "remediated_at": null
+  }
+}
