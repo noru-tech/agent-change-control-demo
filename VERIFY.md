@@ -28,15 +28,8 @@ the README says, then move the pin.
 4. Merge the pin bump through a pull request (the ruleset requires the check).
 5. Run `scripts/verify.sh`, or dispatch `verify-demo.yml`. Each scenario's live outcome must match
    `scenarios.yml`.
-6. Re-run the change-control check on every scenario pull request so the visible checks use the
-   new release:
-
-   ```bash
-   for pr in $(yq '.scenarios[].pr' scenarios.yml); do
-     run=$(gh run list --workflow change-control.yml --branch "$(gh pr view "$pr" --json headRefName --jq .headRefName)" --limit 1 --json databaseId --jq '.[0].databaseId')
-     gh run rerun "$run"
-   done
-   ```
+6. Re-run every change-control run on the scenario pull requests, so the visible checks use the
+   new release and all show the final verdict: `scripts/refresh-checks.sh`.
 
 ## 3. When a scenario has to be re-seeded
 
@@ -53,6 +46,9 @@ approval on it stale. The humans then have to approve again, by hand:
 
 Scenario 10's provenance is signed for the head commit, so a refresh also signs a new provenance
 document. Old bundles stay on the `attestations` branch under their own head commits.
+
+After any of these, run `scripts/refresh-checks.sh`, so the runs from before the new reviews
+show the final verdict too.
 
 `scripts/seed.sh` is safe to re-run at any point: it skips every step GitHub already shows as done
 and waits at the human steps that are not.

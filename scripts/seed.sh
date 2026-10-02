@@ -180,6 +180,9 @@ for id in $(cfg '.scenarios[].id'); do
 done
 rm -f "$ROOT/README.md.bak"
 
+say "6. Checks"
+"$ROOT/scripts/refresh-checks.sh"
+
 say "Seeded"
 cat <<EOF
   Remaining steps (SETUP.md, steps 6 to 9):
