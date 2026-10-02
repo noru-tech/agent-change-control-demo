@@ -255,6 +255,7 @@ scenarios:
     labels: [agent-review]
     review: reviewer_app
     sign_review: true
+    model_review: true
     rule: ACC009
     fixture: agent-review-independent
     check: success

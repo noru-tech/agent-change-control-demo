@@ -1,10 +1,12 @@
-# The reviewing agents, for scenarios 08 to 10. A model reads the diff and writes a review; the
-# reviewing app submits it as written. For scenario 10 the review is also written down as a review
-# document and signed by this workflow, so its signer differs from the writer's.
+# The reviewing agents, for scenarios 08 to 10. The reviewing app approves the head commit.
 #
-#   08  noru-demo-reviewer-same, an Anthropic model (same vendor as the writing agent)
-#   09  noru-demo-reviewer, an OpenAI model, no signed review document
-#   10  noru-demo-reviewer, an OpenAI model, signed review document
+#   08  noru-demo-reviewer-same (same vendor as the writing agent), no model run
+#   09  noru-demo-reviewer (another vendor), no model run, no signed review document
+#   10  noru-demo-reviewer: an OpenAI model reads the diff and writes the review, which is
+#       submitted as written, then signed here as a review document, so its signer differs
+#       from the writer's
+#
+# Only scenario 10 needs OPENAI_API_KEY, and only while it is being seeded (SETUP.md).
 name: agent-review
 
 on:
@@ -25,7 +27,7 @@ concurrency:
 jobs:
   review:
     runs-on: ubuntu-latest
-    # Holds the reviewer apps' keys and the model API keys; restrict it to main (SETUP.md).
+    # Holds the reviewer apps' keys (and, while seeding 10, the model API key); main only.
     environment: agents
     permissions:
       contents: write   # push bundles to the attestations branch (GITHUB_TOKEN)
@@ -66,10 +68,11 @@ jobs:
           ATTESTATIONS_TOKEN: ${{ github.token }}
           ACTIONS_TOKEN: ${{ github.token }}
           ITEM: ${{ inputs.item }}
-          MODEL_VENDOR: ${{ inputs.item == '08' && 'anthropic' || 'openai' }}
-          MODEL: ${{ inputs.item == '08' && (vars.SAME_VENDOR_MODEL || 'claude-opus-5-5') || vars.OTHER_VENDOR_MODEL }}
-          ANTHROPIC_API_KEY: ${{ inputs.item == '08' && secrets.ANTHROPIC_API_KEY || '' }}
-          OPENAI_API_KEY: ${{ inputs.item != '08' && secrets.OPENAI_API_KEY || '' }}
+          MODEL: ${{ inputs.item == '10' && vars.OTHER_VENDOR_MODEL || '' }}
+          OPENAI_API_KEY: ${{ inputs.item == '10' && secrets.OPENAI_API_KEY || '' }}
         run: |
-          [ -n "$MODEL" ] || { echo "::error::set the OTHER_VENDOR_MODEL variable (SETUP.md)"; exit 1; }
+          if [ "$ITEM" = 10 ] && { [ -z "$MODEL" ] || [ -z "$OPENAI_API_KEY" ]; }; then
+            echo "::error::scenario 10 needs the OTHER_VENDOR_MODEL variable and the OPENAI_API_KEY secret (SETUP.md)"
+            exit 1
+          fi
           scripts/agent-review.sh "$ITEM"

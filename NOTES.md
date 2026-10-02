@@ -107,11 +107,14 @@ marked **first run** can only be confirmed once seeding starts.
     so. To show a tool that does emit it (Cursor, for example), the change would have to be
     written with that tool.
 
-16. **Models.**
-    - Scenario 08 calls an Anthropic model (default `claude-opus-5-5`, the `SAME_VENDOR_MODEL`
-      variable), because a same-vendor reviewer should actually be the same vendor.
-    - 09 and 10 call an OpenAI model. I didn't pick the model id; set `OTHER_VENDOR_MODEL`.
-    - The reviewer is registered as agent `noru-demo-reviewer` with
+16. **Models.** Only scenario 10 runs a model: an OpenAI model reviews the diff, and its unedited
+    output is the review. I didn't pick the model id; set `OTHER_VENDOR_MODEL`. The key is needed
+    only while seeding 10 and can be deleted afterwards.
+    - In 08 and 09 the reviewer apps approve with a note saying no model ran. acc decides on who
+      approved which commit, so the verdicts don't depend on review text. The "same vendor" in
+      08 comes from mapping the app to `claude-code-review` (Anthropic in acc's registry), not
+      from calling an Anthropic model.
+    - The other-vendor reviewer is registered as agent `noru-demo-reviewer` with
       `--agent-vendor noru-demo-reviewer=openai`. acc's built-in `codex` entry would be wrong:
       the reviewer is not Codex.
     - If the model requests changes, the review is still submitted, and the workflow fails rather

@@ -4,21 +4,22 @@
 #   scripts/agent-review.sh ID
 #
 # Run by .github/workflows/agent-review.yml for scenarios 08, 09 and 10. The workflow picks the
-# app (GH_TOKEN is its installation token) and the model from the scenario's `review`:
-#   reviewer_same_app  same vendor as the writing agent (anthropic)
-#   reviewer_app       another vendor (openai)
+# app from the scenario's `review` (GH_TOKEN is its installation token):
+#   reviewer_same_app  mapped to claude-code-review, the writing agent's vendor (Anthropic)
+#   reviewer_app       mapped to noru-demo-reviewer, another vendor (OpenAI)
+#
+# Only a scenario with `model_review: true` (10) runs a model. acc never reads review text, so
+# 08 and 09 need no model: their app approves with a note that says no model was run.
 #
 # Environment:
 #   GH_TOKEN            the reviewing app's installation token
-#   MODEL_VENDOR        anthropic or openai
-#   MODEL               the model id to call
-#   ANTHROPIC_API_KEY or OPENAI_API_KEY
+#   MODEL, OPENAI_API_KEY   for `model_review` scenarios only
 #   ATTESTATIONS_TOKEN  for scripts/sign.sh, when the scenario signs its review
 #   ACTIONS_TOKEN       the job's GITHUB_TOKEN, to re-run the change-control check afterwards
 #
-# The review the model writes is submitted as written. If it requests changes, the review is
-# still submitted and the script fails: the scenario then needs a look, not a retry until the
-# model agrees.
+# A model's review is submitted as written. If it requests changes, the review is still
+# submitted and the script fails: the scenario then needs a look, not a retry until the model
+# agrees.
 
 source "$(dirname "$0")/lib.sh"
 need gh jq yq curl
@@ -45,24 +46,31 @@ fi
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 started="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-gh api "repos/$REPO/pulls/$pr" -H "Accept: application/vnd.github.diff" > "$work/change.diff"
-"$ROOT/scripts/review-model.sh" "${MODEL_VENDOR:?}" "${MODEL:?}" "$work/change.diff" \
-  > "$work/review.md" 2> "$work/model.log" || { cat "$work/model.log" >&2; exit 1; }
-served="$(sed -n 's/^model: //p' "$work/model.log")"
-
-decision="$(grep -Eo '^DECISION: (APPROVE|REQUEST_CHANGES)\s*$' "$work/review.md" | tail -1 | awk '{print $2}')"
-[ -n "$decision" ] || die "the model's review has no DECISION line; nothing submitted"
-
 body="$work/body.md"
-{
-  sed '/^DECISION: /d' "$work/review.md"
-  echo
-  echo "---"
-  echo "Submitted by \`${app}[bot]\`, a reviewing agent for this demo. The text above is the"
-  echo "unedited output of \`$served\` ($MODEL_VENDOR), given the diff and"
-  echo "[the review prompt](https://github.com/$REPO/blob/main/scripts/review-prompt.md)."
-} > "$body"
-event="$decision"
+served=""
+if [ "$(field '.model_review // false')" = true ]; then
+  gh api "repos/$REPO/pulls/$pr" -H "Accept: application/vnd.github.diff" > "$work/change.diff"
+  "$ROOT/scripts/review-model.sh" "${MODEL:?}" "$work/change.diff" \
+    > "$work/review.md" 2> "$work/model.log" || { cat "$work/model.log" >&2; exit 1; }
+  served="$(sed -n 's/^model: //p' "$work/model.log")"
+  event="$(grep -Eo '^DECISION: (APPROVE|REQUEST_CHANGES)\s*$' "$work/review.md" | tail -1 | awk '{print $2}')"
+  [ -n "$event" ] || die "the model's review has no DECISION line; nothing submitted"
+  {
+    sed '/^DECISION: /d' "$work/review.md"
+    echo
+    echo "---"
+    echo "Submitted by \`${app}[bot]\`, a reviewing agent for this demo. The text above is the"
+    echo "unedited output of \`$served\` (OpenAI), given the diff and"
+    echo "[the review prompt](https://github.com/$REPO/blob/main/scripts/review-prompt.md)."
+  } > "$body"
+else
+  event=APPROVE
+  {
+    echo "Approved by \`${app}[bot]\`, a reviewing agent account for this demo (mapped to"
+    echo "\`$agent\`). No model was run for this scenario: acc decides on who approved which commit,"
+    echo "never on what a review says. See [scenario $id](https://github.com/$REPO/blob/main/README.md#the-scenarios)."
+  } > "$body"
+fi
 response="$(jq -n --arg commit "$head" --arg event "$event" --rawfile body "$body" \
   '{commit_id: $commit, event: $event, body: $body}' \
   | gh api "repos/$REPO/pulls/$pr/reviews" --method POST --input -)"

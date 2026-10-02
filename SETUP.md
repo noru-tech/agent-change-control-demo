@@ -55,10 +55,12 @@ Create three apps owned by `noru-tech`, each with no webhook, installed on this 
 
 - [ ] Create the environment **`agents`** with deployment branches limited to `main`.
 - [ ] Environment secrets: `WRITER_APP_PRIVATE_KEY`, `REVIEWER_APP_PRIVATE_KEY`,
-      `REVIEWER_SAME_APP_PRIVATE_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`.
+      `REVIEWER_SAME_APP_PRIVATE_KEY`.
 - [ ] Environment variables: `WRITER_APP_CLIENT_ID`, `REVIEWER_APP_CLIENT_ID`,
-      `REVIEWER_SAME_APP_CLIENT_ID`, `OTHER_VENDOR_MODEL` (the OpenAI model for scenarios 09
-      and 10), and optionally `SAME_VENDOR_MODEL` (defaults to `claude-opus-5-5`).
+      `REVIEWER_SAME_APP_CLIENT_ID`, `OTHER_VENDOR_MODEL` (the OpenAI model that reviews
+      scenario 10).
+- [ ] Just before step 6, add the secret `OPENAI_API_KEY`. Only scenario 10's review uses it.
+      Delete it after step 6; nothing that runs on a schedule needs it.
 
 ### 5. First push (operator)
 
@@ -78,6 +80,7 @@ GitHub UI (Files changed > Review changes > Approve) when it asks.
 - [ ] **(reviewer)** approve scenarios 01, 04, 06 and 07.
 - [ ] **(operator)** approve scenario 02, your own agent's change.
 - [ ] Nobody reviews 03. No human reviews 08, 09 or 10; the script runs the agent reviews.
+- [ ] Delete the `OPENAI_API_KEY` secret from the `agents` environment.
 
 Do not approve, comment-approve or dismiss anything else on the scenario pull requests. Every
 review is part of a verdict.

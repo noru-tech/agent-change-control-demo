@@ -49,7 +49,7 @@ approval on it stale. The humans then have to approve again, by hand:
 | 02 | the operator |
 | 05 | the independent reviewer approves the refreshed head, **then** dispatch `agent-write.yml` with `mode: followup`; nobody approves again |
 | 03 | nobody |
-| 08, 09, 10 | nobody: dispatch `agent-review.yml` for the scenario. For 10 this also re-signs the review and replaces `scenarios/10/review-output.md` (commit the new one through a pull request and update the model and date in the README) |
+| 08, 09, 10 | nobody: dispatch `agent-review.yml` for the scenario. For 10, add the `OPENAI_API_KEY` secret first and delete it afterwards; this also re-signs the review and replaces `scenarios/10/review-output.md` (commit the new one through a pull request and update the model and date in the README) |
 
 Scenario 10's provenance is signed for the head commit, so a refresh also signs a new provenance
 document. Old bundles stay on the `attestations` branch under their own head commits.

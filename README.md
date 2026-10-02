@@ -27,9 +27,9 @@ merged.
 | 05 | Stale approval | declaration | approved, then the agent pushed again | FAIL [ACC001][r1] | [open][pr05] |
 | 06 | Authorship from trailers | Claude Code `Co-Authored-By` trailer | independent human approves | PASS on `derived` evidence | [open][pr06] |
 | 07 | Authorship from Agent Trace | Agent Trace record under `traces/` | independent human approves | PASS on `derived` evidence | [open][pr07] |
-| 08 | Same-vendor agent review | declaration | an Anthropic model approves | FAIL [ACC008][r8], ACC001; INFO [ACC007][r7] | [open][pr08] |
-| 09 | Other-vendor agent review, unsigned | declaration | an OpenAI model approves, unsigned | FAIL ACC001; WARN [ACC010][r10] | [open][pr09] |
-| 10 | Four eyes with no human approval | signed provenance | an OpenAI model approves, signed | PASS, no human approval | [open][pr10] |
+| 08 | Same-vendor agent review | declaration | the same-vendor reviewer app approves | FAIL [ACC008][r8], ACC001; INFO [ACC007][r7] | [open][pr08] |
+| 09 | Other-vendor agent review, unsigned | declaration | the other-vendor reviewer app approves, unsigned | FAIL ACC001; WARN [ACC010][r10] | [open][pr09] |
+| 10 | Four eyes with no human approval | signed provenance | an OpenAI model reviews and approves, signed | PASS, no human approval | [open][pr10] |
 
 "Expected" is the outcome of the check under acc 0.6.0. Two of them read differently in acc's
 table than on the check. In 04 the table says WARN and the check is green, because ACC006 is a
@@ -234,8 +234,10 @@ document to the change, and the sha256 of the predicate file, which is what
 - **The accounts are real.** Two people with their own GitHub accounts, and three GitHub Apps.
   Every human approval was clicked by that human in the GitHub UI. No script presses a human's
   button.
-- **The agent reviews are real model runs.** The reviews in 08, 09 and 10 are each one model's
-  unedited output, with the model named in the review.
+- **One agent review is a model run; two are not.** In scenario 10 an OpenAI model reviewed the
+  diff, and its unedited output is the review. In 08 and 09 the reviewer apps approve with a note
+  saying no model was run. acc decides on who approved which commit, not on what a review says,
+  so those two verdicts are the same either way.
 - **The people agreed to appear here.** Their logins and review times are in the pull requests,
   in the manifests and in the signed attestations, which are public and, for Sigstore, permanent.
   Read acc's [privacy note](https://github.com/noru-tech/agent-change-control/blob/v0.6.0/docs/privacy.md)
