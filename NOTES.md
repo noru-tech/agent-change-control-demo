@@ -67,6 +67,17 @@ marked **first run** can only be confirmed once seeding starts.
    - **10:** ACC007 fires (info), so acc's table prints WARN while the check passes. The README
      explains this.
 
+10a. **acc's SARIF cannot be uploaded to code scanning.** Found on the first seeding run. acc
+     0.6.0 sets every result's location to the pull request's URL (`src/output/sarif/mod.rs`).
+     Code scanning rejects the file: "SARIF URI scheme "https" did not match the checkout URI
+     scheme "file"". acc's own docs (`docs/github-action.md`, "Blocking or advisory") and
+     `examples/workflow-required-check.yml` both tell users to upload it, so that setup fails for
+     everyone. acc's own repository doesn't upload SARIF, which is likely why it went unnoticed.
+     A failed upload also turns the job red when acc passes. I removed the upload from
+     `change-control.yml`, against the spec. Fix in acc: give each result a repository file as
+     its location (for example the policy file, or a fixed `.agent-change-control` path) and put
+     the pull request URL in the message or in `properties`.
+
 ## Decisions I made
 
 10. **GitHub Apps, not machine users.** A GitHub App with pull requests: write can submit an
@@ -140,8 +151,7 @@ marked **first run** can only be confirmed once seeding starts.
     ruleset forces review on everything. Should the README say so, or should acc grow an
     open-PR equivalent of ACC003?
 
-21. **SARIF upload on `pull_request_review` events.** **First run:** check that
-    `codeql-action/upload-sarif` accepts that event's ref and SHA.
+21. **SARIF upload.** Removed; see item 10a.
 
 22. **cosign details.** These are written per acc `docs/signing.md` but not yet run:
     - `cosign attest-blob --statement … --bundle … --yes -`;

@@ -1,7 +1,10 @@
 # The check every scenario pull request shows. It runs acc on the pull request with the evidence
-# the demo publishes (agent account mappings, Agent Trace records, verified signed bundles), fails
-# when the policy threshold is exceeded, and uploads SARIF to code scanning. The ruleset on main
-# requires this job, so failing scenarios cannot be merged.
+# the demo publishes (agent account mappings, Agent Trace records, verified signed bundles) and
+# fails when the policy threshold is exceeded. The job summary holds acc's table. The ruleset on
+# main requires this job, so failing scenarios cannot be merged.
+#
+# No SARIF upload: acc 0.6.0 gives each result an https location (the pull request's URL), and
+# code scanning rejects any SARIF whose locations are not files in the checkout (NOTES.md).
 #
 # Runs on review events as well as pushes: a verdict changes the moment an approval arrives, goes
 # stale or is dismissed.
@@ -30,7 +33,6 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
-      security-events: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -64,10 +66,3 @@ jobs:
           verification: ${{ steps.evidence.outputs.verification }}
           verified-by: ${{ steps.evidence.outputs.verified-by }}
           fail-on-findings: true
-
-      - name: Upload SARIF to code scanning
-        if: always() && steps.acc.outputs.output != '' && !github.event.pull_request.head.repo.fork
-        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
-        with:
-          sarif_file: ${{ steps.acc.outputs.output }}
-          category: agent-change-control

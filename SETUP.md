@@ -29,8 +29,7 @@ later.
 - [ ] Settings > Actions > General: workflow permissions **read repository contents**; leave
       "Allow GitHub Actions to create and approve pull requests" **off** (the apps open and review
       pull requests, not `GITHUB_TOKEN`).
-- [ ] Settings > Code security: enable private vulnerability reporting. Code scanning needs no
-      setup; the workflows upload SARIF.
+- [ ] Settings > Code security: enable private vulnerability reporting.
 - [ ] Give the independent reviewer **write** access, so GitHub also counts their approvals.
 - [ ] Topics:
       `gh repo edit noru-tech/agent-change-control-demo --add-topic agent-change-control,ai-agents,separation-of-duties,four-eyes,in-toto,sigstore,compliance,soc2,iso27001`
