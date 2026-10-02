@@ -18,7 +18,7 @@ acc:
 # GitHub identities. The two humans fill in their logins during setup (SETUP.md, step 1).
 identities:
   operator: bipthelin               # human: directs the writing agent
-  reviewer: ""                      # human: the independent reviewer
+  reviewer: michaelsterling         # human: the independent reviewer
   writer_app: noru-demo-writer      # GitHub App: the writing agent's account
   reviewer_app: noru-demo-reviewer  # GitHub App: reviewing agent, another vendor
   reviewer_same_app: noru-demo-reviewer-same  # GitHub App: reviewing agent, same vendor
@@ -272,7 +272,7 @@ scenarios:
 # The exception recorded for the one merge without independent approval (history h4). seed.sh
 # writes it to .agent-change-control/dispositions.json once the finding exists.
 exception:
-  owner: ""   # who accepted the exception (an email or login); filled in at setup
+  owner: security@noru.tech   # who accepted the exception (an email or login); filled in at setup
   expires_in_days: 90
   rationale: >-
     Merged by the operator without review while seeding this demo, before the ruleset on main
