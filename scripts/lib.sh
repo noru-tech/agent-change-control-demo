@@ -82,9 +82,11 @@ item_dir() {
   esac
 }
 
-# pr_for_branch BRANCH: the number of the pull request from BRANCH (any state), or empty.
+# pr_for_branch BRANCH: the open or merged pull request from BRANCH, or empty. A closed, unmerged
+# one does not count: closing a spoiled scenario and opening it again is how it is replaced.
 pr_for_branch() {
-  gh pr list --repo "$REPO" --head "$1" --state all --json number --jq '.[0].number // empty'
+  gh pr list --repo "$REPO" --head "$1" --state all --json number,state \
+    --jq '[.[] | select(.state != "CLOSED")][0].number // empty'
 }
 
 # head_of PR: the pull request's current head commit.

@@ -14,6 +14,12 @@
 source "$(dirname "$0")/lib.sh"
 need gh jq yq
 ACC="$(acc_bin)"
+# acc reads GITHUB_TOKEN or GH_TOKEN, not gh's login; without one it is limited to 60 requests an
+# hour, which ten pull requests exceed.
+if [ -z "${GITHUB_TOKEN:-}" ] && [ -z "${GH_TOKEN:-}" ]; then
+  GITHUB_TOKEN="$(gh auth token)" || die "set GITHUB_TOKEN or log in with gh"
+  export GITHUB_TOKEN
+fi
 
 ids=("$@")
 if [ "${#ids[@]}" -eq 0 ]; then
