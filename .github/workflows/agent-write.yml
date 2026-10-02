@@ -1,0 +1,74 @@
+# The writing agent. Creates or refreshes a scenario branch and its pull request as the writer
+# app (noru-demo-writer), and signs a provenance document where the scenario needs one (10).
+#
+# The changes are pre-written under scenarios/<id>/files; this workflow is the agent's account
+# and hands, not a model run. See README, "What is real in this demo".
+#
+# Signing: cosign signs keyless with this job's OIDC identity, so the signer recorded for the
+# provenance document is this workflow file on main. Bundles go to the attestations branch.
+name: agent-write
+
+on:
+  workflow_dispatch:
+    inputs:
+      item:
+        description: Scenario (01-10) or history entry (h1-h4) from scenarios.yml
+        required: true
+        type: string
+      mode:
+        description: open (idempotent), followup (scenario 05), refresh (force-push the branch)
+        required: true
+        type: choice
+        options: [open, followup, refresh]
+        default: open
+
+permissions: {}
+
+concurrency:
+  group: agent-write
+  cancel-in-progress: false
+
+jobs:
+  write:
+    runs-on: ubuntu-latest
+    # Holds the writer app's key; restrict it to main in the environment's settings (SETUP.md).
+    environment: agents
+    permissions:
+      contents: write   # push bundles to the attestations branch (GITHUB_TOKEN)
+      id-token: write   # keyless signing
+    steps:
+      - name: Check inputs
+        env:
+          ITEM: ${{ inputs.item }}
+        run: |
+          [[ "$ITEM" =~ ^(0[1-9]|10|h[1-4])$ ]] || { echo "::error::unknown item $ITEM"; exit 1; }
+          [ "$GITHUB_REF" = refs/heads/main ] || { echo "::error::run from main only"; exit 1; }
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Writer app token
+        id: app
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.WRITER_APP_CLIENT_ID }}
+          private-key: ${{ secrets.WRITER_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+
+      - name: Write the change
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          ATTESTATIONS_TOKEN: ${{ github.token }}
+          ITEM: ${{ inputs.item }}
+          MODE: ${{ inputs.mode }}
+        run: |
+          case "$MODE" in
+            open) scripts/open-change.sh "$ITEM" ;;
+            followup) scripts/open-change.sh "$ITEM" --followup ;;
+            refresh) scripts/open-change.sh "$ITEM" --refresh ;;
+          esac

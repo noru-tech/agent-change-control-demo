@@ -1,0 +1,83 @@
+# The monthly evidence: `acc scan` over the previous calendar month, with recorded exceptions
+# applied, signed through GitHub artifact attestations and published as a release asset.
+#
+# Verify one as the README describes ("Verify a signed verdict yourself"):
+#   gh attestation verify manifest-YYYY-MM.json --repo noru-tech/agent-change-control-demo \
+#     --predicate-type https://noru.tech/spec/ai-change-provenance/v0.3
+name: monthly-scan
+
+on:
+  schedule:
+    - cron: "17 5 2 * *"   # 05:17 UTC on the 2nd, for the month before
+  workflow_dispatch:
+    inputs:
+      month:
+        description: Month to scan as YYYY-MM (default the previous calendar month)
+        required: false
+        type: string
+
+permissions: {}
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # create the release
+      pull-requests: read
+      id-token: write       # keyless signing
+      attestations: write   # store the attestation
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install acc
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: scripts/install-acc.sh "$RUNNER_TEMP/acc" >> "$GITHUB_PATH"
+
+      - name: Window
+        id: window
+        env:
+          MONTH: ${{ inputs.month }}
+        run: |
+          month="${MONTH:-$(date -u -d "$(date -u +%Y-%m-01) -1 day" +%Y-%m)}"
+          [[ "$month" =~ ^[0-9]{4}-(0[1-9]|1[0-2])$ ]] || { echo "::error::month must be YYYY-MM"; exit 1; }
+          since="$month-01"
+          until="$(date -u -d "$since +1 month -1 day" +%Y-%m-%d)"
+          { echo "month=$month"; echo "since=$since"; echo "until=$until"; } >> "$GITHUB_OUTPUT"
+
+      - name: Scan
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SINCE: ${{ steps.window.outputs.since }}
+          UNTIL: ${{ steps.window.outputs.until }}
+          MONTH: ${{ steps.window.outputs.month }}
+        run: |
+          scripts/scan.sh "$SINCE" "$UNTIL" "manifest-$MONTH.json" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Attest the manifest
+        id: attest
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: manifest-${{ steps.window.outputs.month }}.json
+          predicate-type: https://noru.tech/spec/ai-change-provenance/v0.3
+          predicate-path: manifest-${{ steps.window.outputs.month }}.json
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MONTH: ${{ steps.window.outputs.month }}
+          BUNDLE: ${{ steps.attest.outputs.bundle-path }}
+          URL: ${{ steps.attest.outputs.attestation-url }}
+        run: |
+          cp "$BUNDLE" "manifest-$MONTH.sigstore.json"
+          notes="acc scan of merged pull requests in $MONTH (UTC), with recorded exceptions applied.
+          Attestation: $URL"
+          if gh release view "manifest-$MONTH" >/dev/null 2>&1; then
+            gh release upload "manifest-$MONTH" "manifest-$MONTH.json" "manifest-$MONTH.sigstore.json" --clobber
+          else
+            gh release create "manifest-$MONTH" "manifest-$MONTH.json" "manifest-$MONTH.sigstore.json" \
+              --target "$GITHUB_SHA" --title "Change-control manifest $MONTH" --notes "$notes"
+          fi
+          echo "attestation: $URL" >> "$GITHUB_STEP_SUMMARY"

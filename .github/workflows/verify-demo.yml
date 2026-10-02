@@ -1,0 +1,57 @@
+# Nightly drift check: collect every scenario pull request with the pinned acc release and compare
+# each rule's outcome with scenarios.yml. Opens (or comments on) an issue when anything differs.
+name: verify-demo
+
+on:
+  schedule:
+    - cron: "43 3 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install acc
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: scripts/install-acc.sh "$RUNNER_TEMP/acc" >> "$GITHUB_PATH"
+
+      - name: Verify
+        id: verify
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -o pipefail
+          scripts/verify.sh 2>&1 | tee verify.log
+
+      - name: Report drift
+        if: failure() && steps.verify.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          fence='```'
+          body="scripts/verify.sh found verdicts that differ from scenarios.yml.
+
+          Run: $RUN
+
+          $fence
+          $(tail -n 60 verify.log)
+          $fence"
+          gh label create drift --description "verify-demo found a verdict that differs from scenarios.yml" --force >/dev/null
+          issue="$(gh issue list --label drift --state open --json number --jq '.[0].number // empty')"
+          if [ -n "$issue" ]; then
+            gh issue comment "$issue" --body "$body"
+          else
+            gh issue create --title "Demo verdicts drifted from scenarios.yml" --label drift --body "$body"
+          fi

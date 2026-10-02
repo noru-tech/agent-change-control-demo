@@ -1,0 +1,5 @@
+node_modules/
+.verify/
+*.sigstore.json
+acc-results.sarif
+acc-manifest.json

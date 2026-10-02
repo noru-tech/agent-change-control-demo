@@ -1,0 +1,75 @@
+# The reviewing agents, for scenarios 08 to 10. A model reads the diff and writes a review; the
+# reviewing app submits it as written. For scenario 10 the review is also written down as a review
+# document and signed by this workflow, so its signer differs from the writer's.
+#
+#   08  noru-demo-reviewer-same, an Anthropic model (same vendor as the writing agent)
+#   09  noru-demo-reviewer, an OpenAI model, no signed review document
+#   10  noru-demo-reviewer, an OpenAI model, signed review document
+name: agent-review
+
+on:
+  workflow_dispatch:
+    inputs:
+      item:
+        description: Scenario to review (08, 09 or 10)
+        required: true
+        type: choice
+        options: ["08", "09", "10"]
+
+permissions: {}
+
+concurrency:
+  group: agent-review-${{ inputs.item }}
+  cancel-in-progress: false
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    # Holds the reviewer apps' keys and the model API keys; restrict it to main (SETUP.md).
+    environment: agents
+    permissions:
+      contents: write   # push bundles to the attestations branch (GITHUB_TOKEN)
+      id-token: write   # keyless signing
+      actions: write    # re-run the change-control check after the review is signed
+    steps:
+      - name: Check inputs
+        run: |
+          [ "$GITHUB_REF" = refs/heads/main ] || { echo "::error::run from main only"; exit 1; }
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Same-vendor reviewer app token
+        if: inputs.item == '08'
+        id: same
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.REVIEWER_SAME_APP_CLIENT_ID }}
+          private-key: ${{ secrets.REVIEWER_SAME_APP_PRIVATE_KEY }}
+          permission-pull-requests: write
+
+      - name: Other-vendor reviewer app token
+        if: inputs.item != '08'
+        id: other
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.REVIEWER_APP_CLIENT_ID }}
+          private-key: ${{ secrets.REVIEWER_APP_PRIVATE_KEY }}
+          permission-pull-requests: write
+
+      - name: Review
+        env:
+          GH_TOKEN: ${{ steps.same.outputs.token || steps.other.outputs.token }}
+          ATTESTATIONS_TOKEN: ${{ github.token }}
+          ACTIONS_TOKEN: ${{ github.token }}
+          ITEM: ${{ inputs.item }}
+          MODEL_VENDOR: ${{ inputs.item == '08' && 'anthropic' || 'openai' }}
+          MODEL: ${{ inputs.item == '08' && (vars.SAME_VENDOR_MODEL || 'claude-opus-5-5') || vars.OTHER_VENDOR_MODEL }}
+          ANTHROPIC_API_KEY: ${{ inputs.item == '08' && secrets.ANTHROPIC_API_KEY || '' }}
+          OPENAI_API_KEY: ${{ inputs.item != '08' && secrets.OPENAI_API_KEY || '' }}
+        run: |
+          [ -n "$MODEL" ] || { echo "::error::set the OTHER_VENDOR_MODEL variable (SETUP.md)"; exit 1; }
+          scripts/agent-review.sh "$ITEM"

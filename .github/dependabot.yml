@@ -1,0 +1,10 @@
+version: 2
+updates:
+  # Keeps the SHA pins in .github/workflows current. The acc action pin is bumped by hand,
+  # together with acc.version in scenarios.yml (VERIFY.md).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: noru-tech/agent-change-control

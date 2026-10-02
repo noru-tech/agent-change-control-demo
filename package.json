@@ -1,0 +1,15 @@
+{
+  "name": "kassaflow",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A made-up invoicing API that gives the agent-change-control demo pull requests something to change.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node src/server.ts",
+    "test": "node --test \"test/**/*.test.ts\""
+  }
+}

@@ -1,0 +1,14 @@
+# The demo's policy: acc's defaults, plus agent reviewers that may satisfy independence on pull
+# requests labelled `agent-review`. Keys as documented in acc docs/policy.md (acc 0.6.0).
+#
+# The change-control workflow reads this file from the base branch, so a pull request cannot
+# change the policy it is checked against.
+version: "0.3"
+fail_on: medium
+agent_review:
+  satisfies_independence: true
+  require: [operator, provider, identity]
+  minimum_evidence: signed
+  labels: [agent-review]
+# acc 0.6.0 requires the key even when every rule keeps its default (see NOTES.md).
+rules: {}

@@ -1,0 +1,1 @@
+Part of the merged history of [agent-change-control-demo](https://github.com/noru-tech/agent-change-control-demo/blob/main/README.md), so that `acc scan` has a month to report on. Claude Code wrote this change for @{{operator}}; @{{reviewer}} approves it before it is merged.

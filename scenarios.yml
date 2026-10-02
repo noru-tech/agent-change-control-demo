@@ -1,0 +1,310 @@
+# The single source of truth for the demo. Every script and workflow reads this file:
+#
+#   scripts/seed.sh      creates the branches, commits and pull requests it describes
+#   scripts/verify.sh    collects each pull request with acc and compares rule outcomes to `expected`
+#   scripts/preview.sh   evaluates a synthetic copy of each scenario offline (no GitHub needed)
+#
+# `pr` is written back by seed.sh when it opens the pull request. `expected` lists every rule's
+# outcome under the pinned acc release, as acc prints it (pass, fail, unknown, not_applicable).
+# `check` is the outcome of the change-control check on the pull request: `success` when acc
+# exits 0, `failure` when it exits 1.
+
+repository: noru-tech/agent-change-control-demo
+acc:
+  version: "0.6.0"
+  # noru-tech/agent-change-control at tag v0.6.0. Bump both together.
+  action_sha: 0c140ee047e6c7b5b16d09d3ee59ec12b4a854bc
+
+# GitHub identities. The two humans fill in their logins during setup (SETUP.md, step 1).
+identities:
+  operator: ""                      # human: directs the writing agent
+  reviewer: ""                      # human: the independent reviewer
+  writer_app: noru-demo-writer      # GitHub App: the writing agent's account
+  reviewer_app: noru-demo-reviewer  # GitHub App: reviewing agent, another vendor
+  reviewer_same_app: noru-demo-reviewer-same  # GitHub App: reviewing agent, same vendor
+  # The human who operates the other-vendor reviewing agent in scenario 10. It must not be the
+  # operator. Empty means the independent reviewer.
+  reviewer_agent_operator: ""
+
+# Evidence the change-control workflow and verify.sh hand to acc for every pull request.
+evidence:
+  agent_accounts:
+    - noru-demo-writer[bot]=claude-code
+    - noru-demo-reviewer[bot]=noru-demo-reviewer
+    - noru-demo-reviewer-same[bot]=claude-code-review
+  agent_vendors:
+    # claude-code and claude-code-review are in acc's built-in registry (anthropic).
+    - noru-demo-reviewer=openai
+  # Signed documents are accepted only from these workflows of this repository.
+  signer_workflows:
+    provenance: .github/workflows/agent-write.yml
+    review: .github/workflows/agent-review.yml
+  # Branch that holds signed bundles, under heads/<head sha>/.
+  attestations_branch: attestations
+
+scenarios:
+  - id: "01"
+    pr: null
+    branch: demo/01-clean-agent-change
+    title: "01: Clean agent change, independent approval"
+    opened_by: writer_app
+    declaration: true
+    sign_provenance: false
+    labels: []
+    review: reviewer
+    rule: ACC001
+    fixture: claude-clean
+    check: success
+    expected:
+      ACC001: pass
+      ACC002: pass
+      ACC003: not_applicable
+      ACC006: pass
+      ACC007: not_applicable
+      ACC008: not_applicable
+      ACC009: not_applicable
+      ACC010: not_applicable
+
+  - id: "02"
+    pr: null
+    branch: demo/02-operator-self-approved
+    title: "02: The agent's operator approves its change"
+    opened_by: writer_app
+    declaration: true
+    sign_provenance: false
+    labels: []
+    review: operator
+    rule: ACC002
+    fixture: claude-operator-self-approved
+    check: failure
+    expected:
+      ACC001: fail
+      ACC002: fail
+      ACC003: not_applicable
+      ACC006: pass
+      ACC007: not_applicable
+      ACC008: not_applicable
+      ACC009: not_applicable
+      ACC010: not_applicable
+
+  - id: "03"
+    pr: null
+    branch: demo/03-no-approval
+    title: "03: Agent change with no approval"
+    opened_by: writer_app
+    declaration: true
+    sign_provenance: false
+    labels: []
+    review: none
+    rule: ACC001
+    fixture: null
+    check: failure
+    expected:
+      ACC001: fail
+      ACC002: pass
+      ACC003: not_applicable
+      ACC006: pass
+      ACC007: not_applicable
+      ACC008: not_applicable
+      ACC009: not_applicable
+      ACC010: not_applicable
+
+  - id: "04"
+    pr: null
+    branch: demo/04-operator-unknown
+    title: "04: Agent account known, operator unknown"
+    opened_by: writer_app
+    declaration: false
+    sign_provenance: false
+    labels: []
+    review: reviewer
+    rule: ACC006
+    fixture: agent-operator-unknown
+    check: success
+    expected:
+      ACC001: unknown
+      ACC002: unknown
+      ACC003: not_applicable
+      ACC006: fail
+      ACC007: not_applicable
+      ACC008: not_applicable
+      ACC009: not_applicable
+      ACC010: not_applicable
+
+  - id: "05"
+    pr: null
+    branch: demo/05-stale-approval
+    title: "05: Approval goes stale after a new commit"
+    opened_by: writer_app
+    declaration: true
+    sign_provenance: false
+    labels: []
+    review: reviewer
+    followup: true
+    rule: ACC001
+    fixture: stale-approval
+    check: failure
+    expected:
+      ACC001: fail
+      ACC002: pass
+      ACC003: not_applicable
+      ACC006: pass
+      ACC007: not_applicable
+      ACC008: not_applicable
+      ACC009: not_applicable
+      ACC010: not_applicable
+
+  - id: "06"
+    pr: null
+    branch: demo/06-trailer-derived
+    title: "06: Authorship read from Co-Authored-By trailers"
+    opened_by: operator
+    declaration: false
+    trailers: true
+    sign_provenance: false
+    labels: []
+    review: reviewer
+    rule: ACC001
+    fixture: claude-trailer-derived
+    check: success
+    expected:
+      ACC001: pass
+      ACC002: pass
+      ACC003: not_applicable
+      ACC006: pass
+      ACC007: not_applicable
+      ACC008: not_applicable
+      ACC009: not_applicable
+      ACC010: not_applicable
+
+  - id: "07"
+    pr: null
+    branch: demo/07-agent-trace
+    title: "07: Authorship read from an Agent Trace record"
+    opened_by: operator
+    declaration: false
+    agent_trace: true
+    sign_provenance: false
+    labels: []
+    review: reviewer
+    rule: ACC001
+    fixture: agent-trace
+    check: success
+    expected:
+      ACC001: pass
+      ACC002: pass
+      ACC003: not_applicable
+      ACC006: pass
+      ACC007: not_applicable
+      ACC008: not_applicable
+      ACC009: not_applicable
+      ACC010: not_applicable
+
+  - id: "08"
+    pr: null
+    branch: demo/08-same-vendor-review
+    title: "08: An agent from the same vendor approves"
+    opened_by: writer_app
+    declaration: true
+    sign_provenance: false
+    labels: []
+    review: reviewer_same_app
+    rule: ACC008
+    fixture: agent-review-same-vendor
+    check: failure
+    expected:
+      ACC001: fail
+      ACC002: pass
+      ACC003: not_applicable
+      ACC006: pass
+      ACC007: fail
+      ACC008: fail
+      ACC009: not_applicable
+      ACC010: not_applicable
+
+  - id: "09"
+    pr: null
+    branch: demo/09-agent-review-unsigned
+    title: "09: Another vendor's agent approves, unsigned"
+    opened_by: writer_app
+    declaration: true
+    sign_provenance: false
+    labels: [agent-review]
+    review: reviewer_app
+    sign_review: false
+    rule: ACC010
+    fixture: agent-review-unsigned
+    check: failure
+    expected:
+      ACC001: fail
+      ACC002: pass
+      ACC003: not_applicable
+      ACC006: pass
+      ACC007: fail
+      ACC008: pass
+      ACC009: not_applicable
+      ACC010: fail
+
+  - id: "10"
+    pr: null
+    branch: demo/10-zero-human-four-eyes
+    title: "10: Four eyes with no human approval"
+    opened_by: writer_app
+    declaration: false
+    sign_provenance: true
+    labels: [agent-review]
+    review: reviewer_app
+    sign_review: true
+    rule: ACC009
+    fixture: agent-review-independent
+    check: success
+    expected:
+      ACC001: pass
+      ACC002: pass
+      ACC003: not_applicable
+      ACC006: pass
+      ACC007: fail
+      ACC008: pass
+      ACC009: pass
+      ACC010: pass
+
+# The exception recorded for the one merge without independent approval (history h4). seed.sh
+# writes it to .agent-change-control/dispositions.json once the finding exists.
+exception:
+  owner: ""   # who accepted the exception (an email or login); filled in at setup
+  expires_in_days: 90
+  rationale: >-
+    Merged by the operator without review while seeding this demo, before the ruleset on main
+    was enabled, so that the scan has a recorded exception to show. Synthetic change; no
+    customer data or production system involved.
+
+# Merged history for `acc scan`. Seeded and merged before the ruleset is enabled.
+history:
+  - id: h1
+    pr: null
+    branch: history/h1-vat
+    title: "Add standard VAT rates"
+    opened_by: writer_app
+    declaration: true
+    review: reviewer
+  - id: h2
+    pr: null
+    branch: history/h2-pagination
+    title: "Add offset pagination helper"
+    opened_by: writer_app
+    declaration: true
+    review: reviewer
+  - id: h3
+    pr: null
+    branch: history/h3-credit-notes
+    title: "Add credit notes for refunds"
+    opened_by: writer_app
+    declaration: true
+    review: reviewer
+  - id: h4
+    pr: null
+    branch: history/h4-country-case
+    title: "Accept lower-case country codes"
+    opened_by: operator
+    declaration: false
+    review: none   # merged by the operator without review: the ACC003 finding
