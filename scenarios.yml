@@ -11,9 +11,9 @@
 
 repository: noru-tech/agent-change-control-demo
 acc:
-  version: "0.6.0"
-  # noru-tech/agent-change-control at tag v0.6.0. Bump both together.
-  action_sha: 0c140ee047e6c7b5b16d09d3ee59ec12b4a854bc
+  version: "0.8.0"
+  # noru-tech/agent-change-control at tag v0.8.0. Bump both together.
+  action_sha: b2cc82b5c7d0e14cf2c016ca3010cae026862b0d
 
 # GitHub identities. The two humans fill in their logins during setup (SETUP.md, step 1).
 identities:

@@ -57,9 +57,9 @@ jobs:
 
       - name: Evaluate the pull request
         id: acc
-        uses: noru-tech/agent-change-control@0c140ee047e6c7b5b16d09d3ee59ec12b4a854bc # v0.6.0
+        uses: noru-tech/agent-change-control@b2cc82b5c7d0e14cf2c016ca3010cae026862b0d # v0.8.0
         with:
-          version: "0.6.0"
+          version: "0.8.0"
           agent-account: ${{ steps.evidence.outputs.agent-account }}
           agent-vendor: ${{ steps.evidence.outputs.agent-vendor }}
           agent-trace: ${{ steps.evidence.outputs.agent-trace }}

@@ -3,7 +3,8 @@
 #
 # Verify one as the README describes ("Verify a signed verdict yourself"):
 #   gh attestation verify manifest-YYYY-MM.json --repo noru-tech/agent-change-control-demo \
-#     --predicate-type https://noru.tech/spec/ai-change-provenance/v0.3
+#     --predicate-type https://noru.tech/spec/ai-change-provenance/v0.4
+#   (v0.4 from acc 0.8.0; manifests signed before that, up to manifest-2026-10, use v0.3)
 name: monthly-scan
 
 on:
@@ -61,7 +62,7 @@ jobs:
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: manifest-${{ steps.window.outputs.month }}.json
-          predicate-type: https://noru.tech/spec/ai-change-provenance/v0.3
+          predicate-type: https://noru.tech/spec/ai-change-provenance/v0.4
           predicate-path: manifest-${{ steps.window.outputs.month }}.json
 
       - name: Publish

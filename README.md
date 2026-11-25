@@ -2,7 +2,7 @@
 
 Ten pull requests that stay open, each showing one verdict of
 [`acc`](https://github.com/noru-tech/agent-change-control), the check that
-[enforces the four-eyes principle for coding agents](https://github.com/noru-tech/agent-change-control/blob/v0.6.0/docs/four-eyes.md).
+[enforces the four-eyes principle for coding agents](https://github.com/noru-tech/agent-change-control/blob/v0.8.0/docs/four-eyes.md).
 
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/noru-tech/agent-change-control-demo/badge)](https://scorecard.dev/viewer/?uri=github.com/noru-tech/agent-change-control-demo)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
@@ -31,7 +31,7 @@ merged.
 | 09 | Other-vendor agent review, unsigned | declaration | the other-vendor reviewer app approves, unsigned | FAIL ACC001; WARN [ACC010][r10] | [open][pr09] |
 | 10 | Four eyes with no human approval | signed provenance | an OpenAI model reviews and approves, signed | PASS, no human approval | [open][pr10] |
 
-"Expected" is the outcome of the check under acc 0.6.0. Two of them read differently in acc's
+"Expected" is the outcome of the check under acc 0.8.0. Two of them read differently in acc's
 table than on the check. In 04 the table says WARN and the check is green, because ACC006 is a
 warning under the default policy. In 10 the table also says WARN, because ACC007 records every
 agent approval as an observation (info), and the check is green.
@@ -137,7 +137,7 @@ check is the gate.
 
 ## Try it on your own repository
 
-The minimal workflow, from acc's [GitHub Action docs](https://github.com/noru-tech/agent-change-control/blob/v0.6.0/docs/github-action.md):
+The minimal workflow, from acc's [GitHub Action docs](https://github.com/noru-tech/agent-change-control/blob/v0.8.0/docs/github-action.md):
 
 ```yaml
 name: change-control
@@ -156,7 +156,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: noru-tech/agent-change-control@v0.6.0
+      - uses: noru-tech/agent-change-control@v0.8.0
 ```
 
 Pin both actions to commit SHAs in production, as this repository does. Then tell acc who the
@@ -177,17 +177,19 @@ with no change at all, as scenario 06 shows.
 Each month, [`monthly-scan.yml`](.github/workflows/monthly-scan.yml) scans the previous month's
 merged pull requests, signs the manifest through GitHub artifact attestations and publishes it as
 a release asset. Verification has two halves, as in acc's
-[signing docs](https://github.com/noru-tech/agent-change-control/blob/v0.6.0/docs/signing.md):
+[signing docs](https://github.com/noru-tech/agent-change-control/blob/v0.8.0/docs/signing.md):
 the signature says who signed, and `acc validate` says whether the findings follow from the facts.
 
 ```bash
 REPO=noru-tech/agent-change-control-demo
 TAG=$(gh release list --repo "$REPO" --json tagName --jq '[.[] | select(.tagName | startswith("manifest-"))][0].tagName')
 gh release download "$TAG" --repo "$REPO" --pattern "$TAG.json"
+# The predicate type follows the manifest's ACP version: v0.4 from acc 0.8.0, v0.3 before
+ACP=$(jq -r .version "$TAG.json")
 
 # 1. Signature and identity, against GitHub's attestation store
 gh attestation verify "$TAG.json" --repo "$REPO" \
-  --predicate-type https://noru.tech/spec/ai-change-provenance/v0.3
+  --predicate-type "https://noru.tech/spec/ai-change-provenance/v$ACP"
 
 # 2. Content: unwrap the Statement and re-evaluate it
 gh attestation download "$TAG.json" --repo "$REPO"    # writes <digest>.jsonl
@@ -241,7 +243,7 @@ document to the change, and the sha256 of the predicate file, which is what
   so those two verdicts are the same either way.
 - **The people agreed to appear here.** Their logins and review times are in the pull requests,
   in the manifests and in the signed attestations, which are public and, for Sigstore, permanent.
-  Read acc's [privacy note](https://github.com/noru-tech/agent-change-control/blob/v0.6.0/docs/privacy.md)
+  Read acc's [privacy note](https://github.com/noru-tech/agent-change-control/blob/v0.8.0/docs/privacy.md)
   before you publish manifests from your own repository.
 
 ## Layout
@@ -268,9 +270,9 @@ heard of Noru, to use anything here.
 [pr08]: https://github.com/noru-tech/agent-change-control-demo/pull/17
 [pr09]: https://github.com/noru-tech/agent-change-control-demo/pull/18
 [pr10]: https://github.com/noru-tech/agent-change-control-demo/pull/14
-[r1]: https://github.com/noru-tech/agent-change-control/blob/v0.6.0/docs/rules/ACC001.md
-[r2]: https://github.com/noru-tech/agent-change-control/blob/v0.6.0/docs/rules/ACC002.md
-[r6]: https://github.com/noru-tech/agent-change-control/blob/v0.6.0/docs/rules/ACC006.md
-[r7]: https://github.com/noru-tech/agent-change-control/blob/v0.6.0/docs/rules/ACC007.md
-[r8]: https://github.com/noru-tech/agent-change-control/blob/v0.6.0/docs/rules/ACC008.md
-[r10]: https://github.com/noru-tech/agent-change-control/blob/v0.6.0/docs/rules/ACC010.md
+[r1]: https://github.com/noru-tech/agent-change-control/blob/v0.8.0/docs/rules/ACC001.md
+[r2]: https://github.com/noru-tech/agent-change-control/blob/v0.8.0/docs/rules/ACC002.md
+[r6]: https://github.com/noru-tech/agent-change-control/blob/v0.8.0/docs/rules/ACC006.md
+[r7]: https://github.com/noru-tech/agent-change-control/blob/v0.8.0/docs/rules/ACC007.md
+[r8]: https://github.com/noru-tech/agent-change-control/blob/v0.8.0/docs/rules/ACC008.md
+[r10]: https://github.com/noru-tech/agent-change-control/blob/v0.8.0/docs/rules/ACC010.md

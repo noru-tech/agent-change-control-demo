@@ -6,7 +6,7 @@ must be done by the named person, by hand. Nothing in this repository scripts a 
 ## Prerequisites
 
 On the operator's machine: `gh` (logged in as the operator), `git`, `jq`, `yq` (mikefarah, v4),
-Node.js 24 and `acc` 0.6.0 (`brew install noru-tech/tap/acc`). The scripts run in bash 3.2 or
+Node.js 24 and `acc` 0.8.0 (`brew install noru-tech/tap/acc`). The scripts run in bash 3.2 or
 later.
 
 ## Checklist
