@@ -1,0 +1,30 @@
+{
+  "version": "0.1.0",
+  "id": "8d62070d-41f7-49f4-893d-564939608212",
+  "timestamp": "2026-10-02T08:11:09Z",
+  "vcs": {
+    "type": "git",
+    "revision": "cb5a491489ea0b949f300e5078cc35e00721177d"
+  },
+  "tool": {
+    "name": "claude-code"
+  },
+  "files": [
+    {
+      "path": "src/late-fee.ts",
+      "conversations": [
+        {
+          "contributor": {
+            "type": "ai"
+          },
+          "ranges": [
+            {
+              "start_line": 1,
+              "end_line": 12
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
